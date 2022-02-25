@@ -1,4 +1,4 @@
-// Copyright 2019-2020 Parity Technologies (UK) Ltd.
+ // Copyright 2019-2020 Parity Technologies (UK) Ltd.
 // This file is part of Polkadot.
 
 // Polkadot is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@ pub mod weights;
 pub use self::currency::DOLLARS;
 
 /// Money matters.
+/// 单位
 pub mod currency {
 	use primitives::v2::Balance;
 
@@ -38,23 +39,26 @@ pub mod currency {
 }
 
 /// Time and blocks.
+/// 时间和块
 pub mod time {
 	use primitives::v2::{BlockNumber, Moment};
-	pub const MILLISECS_PER_BLOCK: Moment = 6000;
-	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
-	pub const EPOCH_DURATION_IN_SLOTS: BlockNumber = 4 * HOURS;
+	pub const MILLISECS_PER_BLOCK: Moment = 6000; //6s一个块
+	pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;//插槽间隔
+	pub const EPOCH_DURATION_IN_SLOTS: BlockNumber = 4 * HOURS;//插槽的周期
 
 	// These time units are defined in number of blocks.
-	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-	pub const HOURS: BlockNumber = MINUTES * 60;
-	pub const DAYS: BlockNumber = HOURS * 24;
-	pub const WEEKS: BlockNumber = DAYS * 7;
+	// 这些时间单位以块数定义。
+	pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);//分钟
+	pub const HOURS: BlockNumber = MINUTES * 60;//小时
+	pub const DAYS: BlockNumber = HOURS * 24;//一天
+	pub const WEEKS: BlockNumber = DAYS * 7;//一周
 
 	// 1 in 4 blocks (on average, not counting collisions) will be primary babe blocks.
 	pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
 }
 
 /// Fee-related.
+/// 费用相关。
 pub mod fee {
 	use crate::weights::ExtrinsicBaseWeight;
 	use frame_support::weights::{
@@ -65,18 +69,22 @@ pub mod fee {
 	pub use sp_runtime::Perbill;
 
 	/// The block saturation level. Fees will be updates based on this value.
+	/// 块饱和度。费用将根据此值更新。
 	pub const TARGET_BLOCK_FULLNESS: Perbill = Perbill::from_percent(25);
 
 	/// Handles converting a weight scalar to a fee value, based on the scale and granularity of the
 	/// node's balance type.
-	///
+	///	根据节点余额类型的规模和粒度，处理将权重标量转换为费用值。
 	/// This should typically create a mapping between the following ranges:
 	///   - [0, `MAXIMUM_BLOCK_WEIGHT`]
 	///   - [Balance::min, Balance::max]
-	///
+	///	这通常应该在以下范围之间创建映射： - [0, `MAXIMUM_BLOCK_WEIGHT`] - [Balance::min, Balance::max]
 	/// Yet, it can be used for any other sort of change to weight-fee. Some examples being:
 	///   - Setting it to `0` will essentially disable the weight fee.
 	///   - Setting it to `1` will cause the literal `#[weight = x]` values to be charged.
+	/// 然而，它可以用于任何其他类型的重量费变化。一些示例是：
+	/// - 将其设置为“0”将基本上禁用重量费。
+	/// - 将其设置为 `1` 将导致对字面 `#[weight = x]` 值进行收费。
 	pub struct WeightToFee;
 	impl WeightToFeePolynomial for WeightToFee {
 		type Balance = Balance;

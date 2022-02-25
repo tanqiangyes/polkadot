@@ -20,6 +20,8 @@
 //!
 //! This doesn't handle the mechanics of determining which para ID actually ends up with a parachain lease. This
 //! must handled by a separately, through the trait interface that this pallet provides or the root dispatchables.
+//! 平行线程和平行链租赁系统。允许声明 para ID，初始化代码和数据，以及！待租用的平行链插槽（即连续调度）。还允许平行链和平行线程交换了。
+//! ！ ！这不处理确定哪个 para ID 最终以平行链租约告终的机制。这 ！必须通过此托盘提供的特征接口或根可调度项单独处理。
 
 use crate::traits::{LeaseError, Leaser, Registrar};
 use frame_support::{

@@ -17,6 +17,7 @@
 //! Auctioning system to determine the set of Parachains in operation. This includes logic for the
 //! auctioning mechanism and for reserving balance as part of the "payment". Unreserving the balance
 //! happens elsewhere.
+//! 拍卖系统，以确定运行中的一组帕拉夏恩。这包括拍卖机制的逻辑和保留余额作为 "支付 "的一部分。取消保留余额发生在其他地方。
 
 use crate::{
 	slot_range::SlotRange,
@@ -64,16 +65,19 @@ impl WeightInfo for TestWeightInfo {
 }
 
 /// An auction index. We count auctions in this type.
+/// 拍卖指数。我们计算这种类型的拍卖。
 pub type AuctionIndex = u32;
 
 type LeasePeriodOf<T> =
 	<<T as Config>::Leaser as Leaser<<T as frame_system::Config>::BlockNumber>>::LeasePeriod;
 
 // Winning data type. This encodes the top bidders of each range together with their bid.
+// 获胜数据类型。这将每个范围的最高出价者及其出价一起编码。
 type WinningData<T> = [Option<(<T as frame_system::Config>::AccountId, ParaId, BalanceOf<T>)>;
 	SlotRange::SLOT_RANGE_COUNT];
 // Winners data type. This encodes each of the final winners of a parachain auction, the parachain
 // index assigned to them, their winning bid and the range that they won.
+// 获胜者数据类型。这对平行链拍卖的每个最终获胜者、分配给他们的平行链索引、他们的中标和他们赢得的范围进行编码。
 type WinnersData<T> =
 	Vec<(<T as frame_system::Config>::AccountId, ParaId, BalanceOf<T>, SlotRange)>;
 

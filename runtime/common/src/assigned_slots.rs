@@ -22,6 +22,11 @@
 //! (typically `Sudo` or a governance origin).
 //! This pallet should not be used on a production relay chain,
 //! only on a test relay chain (e.g. Rococo).
+//! 该托盘允许分配永久（长期）或临时！ （短期）平行链插槽到 paras，
+//! 利用现有的！平行链插槽租赁机制。临时插槽轮流给予！以公平（尽管尽力而为）的方式。
+//! ！必须从配置的源调用可调度对象！ （通常是 `Sudo` 或治理起源）。
+//! ！此托盘不应用于生产中继链，
+//! ！仅在测试中继链上（例如 Rococo）。
 
 use crate::{
 	slots::{self, Pallet as Slots, WeightInfo},
