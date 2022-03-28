@@ -23,7 +23,7 @@ use xcm::latest::{Instruction::*, Junction, Junctions, MultiLocation, WeightLimi
 use xcm_executor::traits::{OnResponse, ShouldExecute};
 
 /// Execution barrier that just takes `max_weight` from `weight_credit`.
-///
+/// 仅从 `weight_credit` 获取 `max_weight` 的执行障碍。
 /// Useful to allow XCM execution by local chain users via extrinsics.
 /// E.g. `pallet_xcm::reserve_asset_transfer` to transfer a reserve asset
 /// out of the local chain to another one.
@@ -47,7 +47,7 @@ impl ShouldExecute for TakeWeightCredit {
 
 /// Allows execution from `origin` if it is contained in `T` (i.e. `T::Contains(origin)`) taking
 /// payments into account.
-///
+/// 如果考虑到付款，则允许从 `origin` 执行，如果它包含在 `T` 中（即 `T::Contains(origin)`）。
 /// Only allows for `TeleportAsset`, `WithdrawAsset`, `ClaimAsset` and `ReserveAssetDeposit` XCMs
 /// because they are the only ones that place assets in the Holding Register to pay for execution.
 pub struct AllowTopLevelPaidExecutionFrom<T>(PhantomData<T>);

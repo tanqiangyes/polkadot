@@ -20,6 +20,7 @@ use frame_support::{traits::Contains, weights::Weight};
 use xcm::latest::{MultiAssets, MultiLocation};
 
 /// Define a handler for when some non-empty `Assets` value should be dropped.
+/// 定义一个处理程序，用于何时应该删除一些非空的 `Assets` 值。
 pub trait DropAssets {
 	/// Handler for receiving dropped assets. Returns the weight consumed by this operation.
 	fn drop_assets(origin: &MultiLocation, assets: Assets) -> Weight;
@@ -32,6 +33,7 @@ impl DropAssets for () {
 
 /// Morph a given `DropAssets` implementation into one which can filter based on assets. This can
 /// be used to ensure that `Assets` values which hold no value are ignored.
+/// 将给定的“DropAssets”实现变形为可以基于资产进行过滤的实现。这可用于确保忽略不包含任何值的“资产”值。
 pub struct FilterAssets<D, A>(PhantomData<(D, A)>);
 
 impl<D: DropAssets, A: Contains<Assets>> DropAssets for FilterAssets<D, A> {
@@ -47,6 +49,7 @@ impl<D: DropAssets, A: Contains<Assets>> DropAssets for FilterAssets<D, A> {
 /// Morph a given `DropAssets` implementation into one which can filter based on origin. This can
 /// be used to ban origins which don't have proper protections/policies against misuse of the
 /// asset trap facility don't get to use it.
+/// 将给定的“DropAssets”实现变形为可以根据来源进行过滤的实现。这可以用来禁止没有适当保护政策以防止滥用资产陷阱设施的来源。
 pub struct FilterOrigin<D, O>(PhantomData<(D, O)>);
 
 impl<D: DropAssets, O: Contains<MultiLocation>> DropAssets for FilterOrigin<D, O> {
@@ -63,6 +66,7 @@ impl<D: DropAssets, O: Contains<MultiLocation>> DropAssets for FilterOrigin<D, O
 pub trait ClaimAssets {
 	/// Claim any assets available to `origin` and return them in a single `Assets` value, together
 	/// with the weight used by this operation.
+	/// 声明任何可用于 `origin` 的资产，并将它们与此操作使用的权重一起以单个 `Assets` 值返回。
 	fn claim_assets(origin: &MultiLocation, ticket: &MultiLocation, what: &MultiAssets) -> bool;
 }
 

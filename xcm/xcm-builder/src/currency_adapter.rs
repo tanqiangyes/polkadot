@@ -15,6 +15,7 @@
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Adapters to work with `frame_support::traits::Currency` through XCM.
+//! 通过 XCM 使用 `frame_support::traits::Currency` 的适配器。
 
 use frame_support::traits::{ExistenceRequirement::AllowDeath, Get, WithdrawReasons};
 use sp_runtime::traits::{CheckedSub, SaturatedConversion};

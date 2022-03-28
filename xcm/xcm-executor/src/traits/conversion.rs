@@ -20,13 +20,14 @@ use xcm::latest::{MultiLocation, OriginKind};
 
 /// Generic third-party conversion trait. Use this when you don't want to force the user to use default
 /// implementations of `From` and `Into` for the types you wish to convert between.
-///
+/// 通用的第三方转换特征。当您不想强制用户对您希望转换的类型使用“From”和“Into”的默认实现时，请使用此选项。
 /// One of `convert`/`convert_ref` and `reverse`/`reverse_ref` MUST be implemented. If possible, implement
 /// `convert_ref`, since this will never result in a clone. Use `convert` when you definitely need to consume
 /// the source value.
-///
+/// 必须实现 `convert``convert_ref` 和 `reverse``reverse_ref` 之一。如果可能，请实现 `convert_ref`，因为这永远不会导致克隆。当您确实需要使用源值时，请使用 `convert`。
 /// Can be amalgamated into tuples. If any of the tuple elements converts into `Ok(_)` it short circuits. Otherwise returns
 /// the `Err(_)` of the last failing conversion (or `Err(())` for ref conversions).
+/// 可以合并成元组。如果任何元组元素转换为“Ok(_)”，它就会短路。否则返回上次失败转换的 `Err(_)`（或 `Err(())` 用于 ref 转换）。
 pub trait Convert<A: Clone, B: Clone> {
 	/// Convert from `value` (of type `A`) into an equivalent value of type `B`, `Err` if not possible.
 	fn convert(value: A) -> Result<B, A> {

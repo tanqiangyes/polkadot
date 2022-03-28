@@ -25,6 +25,7 @@ use frame_support::{
 use xcm::latest::SendXcm;
 
 /// The trait to parameterize the `XcmExecutor`.
+/// 参数化 `XcmExecutor` 的特征。
 pub trait Config {
 	/// The outer call dispatch type.
 	type Call: Parameter + Dispatchable<PostInfo = PostDispatchInfo> + GetDispatchInfo;

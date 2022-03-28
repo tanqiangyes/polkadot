@@ -28,12 +28,14 @@
 //! - `v0::Junction::Parent` cannot be converted to v1, because the way we represent parents in v1
 //!   has changed - instead of being a property of the junction, v1 `MultiLocation`s now have an
 //!   extra field representing the number of parents that the `MultiLocation` contains.
-//!
+//! `v0::Junction::Parent`不能被转换到v1，因为我们在v1中表示父母的方式已经改变了-
+//! v1的`MultiLocation`不再是Junction的一个属性，现在有一个额外的字段代表`MultiLocation`包含的父母数量。
 //! ### `MultiLocation`
 //! - The `try_from` conversion method will always canonicalize the v0 `MultiLocation` before
 //!   attempting to do the proper conversion. Since canonicalization is not a fallible operation,
 //!   we do not expect v0 `MultiLocation` to ever fail to be upgraded to v1.
-//!
+//! `try_from`转换方法在尝试进行适当的转换之前，总是会对v0`MultiLocation`进行规范化。
+//! 由于规范化不是一个易错的操作，我们不期望v0 `MultiLocation`曾经不能升级到v1。
 //! ### `MultiAsset`
 //! - Stronger typing to differentiate between a single class of `MultiAsset` and several classes
 //!   of `MultiAssets` is introduced. As the name suggests, a `Vec<MultiAsset>` that is used on all
@@ -120,20 +122,22 @@ pub mod prelude {
 }
 
 /// Response data to a query.
+/// 对查询的响应数据。
 #[derive(Clone, Eq, PartialEq, Encode, Decode, Debug, TypeInfo)]
 pub enum Response {
 	/// Some assets.
 	Assets(MultiAssets),
 	/// An XCM version.
+	/// xcm版本
 	Version(super::Version),
 }
 
 /// Cross-Consensus Message: A message from one consensus system to another.
-///
+/// 交叉共识消息：从一个共识系统到另一个共识系统的消息。
 /// Consensus systems that may send and receive messages include blockchains and smart contracts.
-///
+/// 可以发送和接收消息的共识系统包括区块链和智能合约。
 /// All messages are delivered from a known *origin*, expressed as a `MultiLocation`.
-///
+/// 所有消息都从已知来源传递，表示为“MultiLocation”。
 /// This is the inner XCM format and is version-sensitive. Messages are typically passed using the outer
 /// XCM format, known as `VersionedXcm`.
 #[derive(Derivative, Encode, Decode, TypeInfo)]
@@ -322,7 +326,7 @@ pub enum Xcm<Call> {
 	/// Ask the destination system to respond with the most recent version of XCM that they
 	/// support in a `QueryResponse` instruction. Any changes to this should also elicit similar
 	/// responses when they happen.
-	///
+	/// 要求目标系统使用他们在 `QueryResponse` 指令中支持的最新版本的 XCM 进行响应。对此的任何更改也应在发生时引起类似的响应。
 	/// Kind: *Instruction*
 	#[codec(index = 11)]
 	SubscribeVersion {
@@ -333,7 +337,7 @@ pub enum Xcm<Call> {
 	},
 
 	/// Cancel the effect of a previous `SubscribeVersion` instruction.
-	///
+	/// 取消之前的 `SubscribeVersion` 指令的效果。
 	/// Kind: *Instruction*
 	#[codec(index = 12)]
 	UnsubscribeVersion,

@@ -40,7 +40,7 @@ pub enum Order<Call> {
 
 	/// Remove the asset(s) (`assets`) from holding and place equivalent assets under the ownership of `beneficiary`
 	/// within this consensus system.
-	///
+	/// 从持有的资产（“资产”）中移除资产，并将等价资产置于该共识系统内的“受益人”的所有权之下。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `max_assets`: The maximum number of unique assets/asset instances to remove from holding. Only the first
 	///   `max_assets` assets/instances of those matched by `assets` will be removed, prioritized under standard asset

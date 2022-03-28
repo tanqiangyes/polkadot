@@ -15,6 +15,7 @@
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Version 0 of the Cross-Consensus Message format data structures.
+//! 交叉共识消息格式数据结构的版本 0。
 
 use super::{super::v1::Order as Order1, MultiAsset, MultiLocation, Xcm};
 use alloc::vec::Vec;
@@ -26,6 +27,7 @@ use derivative::Derivative;
 use parity_scale_codec::{self, Decode, Encode};
 
 /// An instruction to be executed on some or all of the assets in holding, used by asset-related XCM messages.
+/// 对持有的部分或全部资产执行的指令，由资产相关的 XCM 消息使用。
 #[derive(Derivative, Encode, Decode, scale_info::TypeInfo)]
 #[derivative(Clone(bound = ""), Eq(bound = ""), PartialEq(bound = ""), Debug(bound = ""))]
 #[codec(encode_bound())]
@@ -38,7 +40,7 @@ pub enum Order<Call> {
 
 	/// Remove the asset(s) (`assets`) from holding and place equivalent assets under the ownership of `dest` within
 	/// this consensus system.
-	///
+	/// 从持有的资产（`assets`）中移除资产，并将等价资产置于此共识系统内的`dest` 的所有权下。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `dest`: The new owner for the assets.
 	///
@@ -48,9 +50,9 @@ pub enum Order<Call> {
 
 	/// Remove the asset(s) (`assets`) from holding and place equivalent assets under the ownership of `dest` within
 	/// this consensus system.
-	///
+	/// 从持有的资产（`assets`）中移除资产，并将等价资产置于此共识系统内的`dest` 的所有权下。
 	/// Send an onward XCM message to `dest` of `ReserveAssetDeposit` with the given `effects`.
-	///
+	/// 使用给定的 `effects` 向`ReserveAssetDeposit` 的`best` 发送转发 XCM 消息。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `dest`: The new owner for the assets.
 	/// - `effects`: The orders that should be contained in the `ReserveAssetDeposit` which is sent onwards to
@@ -61,9 +63,9 @@ pub enum Order<Call> {
 	DepositReserveAsset { assets: Vec<MultiAsset>, dest: MultiLocation, effects: Vec<Order<()>> },
 
 	/// Remove the asset(s) (`give`) from holding and replace them with alternative assets.
-	///
+	/// 从持有中移除资产（`give`）并用替代资产替换它们。
 	/// The minimum amount of assets to be received into holding for the order not to fail may be stated.
-	///
+	/// 可以说明为使订单不失败而持有的最低资产数量。
 	/// - `give`: The asset(s) to remove from holding.
 	/// - `receive`: The minimum amount of assets(s) which `give` should be exchanged for. The meaning of wildcards
 	///   is undefined and they should be not be used.
@@ -73,7 +75,7 @@ pub enum Order<Call> {
 	ExchangeAsset { give: Vec<MultiAsset>, receive: Vec<MultiAsset> },
 
 	/// Remove the asset(s) (`assets`) from holding and send a `WithdrawAsset` XCM message to a reserve location.
-	///
+	/// 从持有中移除资产（`assets`）并向保留位置发送`WithdrawAsset` XCM 消息。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `reserve`: A valid location that acts as a reserve for all asset(s) in `assets`. The sovereign account
 	///   of this consensus system *on the reserve location* will have appropriate assets withdrawn and `effects` will
@@ -89,7 +91,7 @@ pub enum Order<Call> {
 	},
 
 	/// Remove the asset(s) (`assets`) from holding and send a `TeleportAsset` XCM message to a destination location.
-	///
+	/// 从持有中移除资产（`assets`）并向目标位置发送`TeleportAsset` XCM 消息。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `destination`: A valid location that has a bi-lateral teleportation arrangement.
 	/// - `effects`: The orders to execute on the assets once arrived *on the destination location*.
@@ -99,7 +101,7 @@ pub enum Order<Call> {
 	InitiateTeleport { assets: Vec<MultiAsset>, dest: MultiLocation, effects: Vec<Order<()>> },
 
 	/// Send a `Balances` XCM message with the `assets` value equal to the holding contents, or a portion thereof.
-	///
+	/// 发送“资产”值等于持有内容或其一部分的“余额”XCM 消息。
 	/// - `query_id`: An identifier that will be replicated into the returned XCM message.
 	/// - `dest`: A valid destination for the returned XCM message. This may be limited to the current origin.
 	/// - `assets`: A filter for the assets that should be reported back. The assets reported back will be, asset-
@@ -117,7 +119,7 @@ pub enum Order<Call> {
 
 	/// Pay for the execution of some XCM with up to `weight` picoseconds of execution time, paying for this with
 	/// up to `fees` from the holding account.
-	///
+	/// 为执行某些 XCM 支付高达“weight”皮秒的执行时间，并从持有账户中支付高达“费用”的费用。
 	/// Errors:
 	#[codec(index = 7)]
 	BuyExecution {

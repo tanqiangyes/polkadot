@@ -41,6 +41,7 @@ mod config;
 pub use config::Config;
 
 /// The XCM executor.
+/// XCM执行器
 pub struct XcmExecutor<Config: config::Config> {
 	pub holding: Assets,
 	pub origin: Option<MultiLocation>,
@@ -53,6 +54,8 @@ pub struct XcmExecutor<Config: config::Config> {
 	/// an over-estimate of the actual weight consumed. We do it this way to avoid needing the
 	/// execution engine to keep track of all instructions' weights (it only needs to care about
 	/// the weight of dynamically determined instructions such as `Transact`).
+	/// 剩余重量，定义为“max_weight”对实际消耗重量的高估。
+	/// 我们这样做是为了避免需要执行引擎跟踪所有指令的权重（它只需要关心动态确定的指令的权重，例如“Transact”）。
 	pub total_surplus: u64,
 	pub total_refunded: u64,
 	pub error_handler: Xcm<Config::Call>,
@@ -63,6 +66,7 @@ pub struct XcmExecutor<Config: config::Config> {
 }
 
 /// The maximum recursion limit for `execute_xcm` and `execute_effects`.
+/// `execute_xcm` 和 `execute_effects` 的最大递归限制。
 pub const MAX_RECURSION_LIMIT: u32 = 8;
 
 impl<Config: config::Config> ExecuteXcm<Config::Call> for XcmExecutor<Config> {
@@ -81,7 +85,7 @@ impl<Config: config::Config> ExecuteXcm<Config::Call> for XcmExecutor<Config> {
 			weight_limit,
 			weight_credit,
 		);
-		let xcm_weight = match Config::Weigher::weight(&mut message) {
+		let xcm_weight = match Config::Weigher::weight(&mut message) {//计算重量
 			Ok(x) => x,
 			Err(()) => {
 				log::debug!(
@@ -95,7 +99,7 @@ impl<Config: config::Config> ExecuteXcm<Config::Call> for XcmExecutor<Config> {
 				return Outcome::Error(XcmError::WeightNotComputable)
 			},
 		};
-		if xcm_weight > weight_limit {
+		if xcm_weight > weight_limit {//重量大于限制
 			log::debug!(
 				target: "xcm::execute_xcm_in_credit",
 				"Weight limit reached! weight > weight_limit: {:?} > {:?}. (origin: {:?}, message: {:?}, weight_limit: {:?}, weight_credit: {:?})",
@@ -110,7 +114,7 @@ impl<Config: config::Config> ExecuteXcm<Config::Call> for XcmExecutor<Config> {
 		}
 
 		if let Err(e) =
-			Config::Barrier::should_execute(&origin, &mut message, xcm_weight, &mut weight_credit)
+			Config::Barrier::should_execute(&origin, &mut message, xcm_weight, &mut weight_credit)//检查是否能够执行xcm
 		{
 			log::debug!(
 				target: "xcm::execute_xcm_in_credit",
@@ -124,10 +128,10 @@ impl<Config: config::Config> ExecuteXcm<Config::Call> for XcmExecutor<Config> {
 			return Outcome::Error(XcmError::Barrier)
 		}
 
-		let mut vm = Self::new(origin);
+		let mut vm = Self::new(origin);//生成一个新的执行器
 
 		while !message.0.is_empty() {
-			let result = vm.execute(message);
+			let result = vm.execute(message);//执行xcm里面的call
 			log::trace!(target: "xcm::execute_xcm_in_credit", "result: {:?}", result);
 			message = if let Err(error) = result {
 				vm.total_surplus.saturating_accrue(error.weight);
@@ -139,7 +143,7 @@ impl<Config: config::Config> ExecuteXcm<Config::Call> for XcmExecutor<Config> {
 			}
 		}
 
-		vm.post_execute(xcm_weight)
+		vm.post_execute(xcm_weight)//通知执行完成
 	}
 }
 
@@ -211,6 +215,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 
 	/// Execute any final operations after having executed the XCM message.
 	/// This includes refunding surplus weight, trapping extra holding funds, and returning any errors during execution.
+	/// 在执行 XCM 消息后执行任何最终操作。这包括退还多余的权重、捕获额外的持有资金以及返回执行期间的任何错误。
 	pub fn post_execute(mut self, xcm_weight: Weight) -> Outcome {
 		self.refund_surplus();
 		drop(self.trader);
@@ -235,6 +240,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 	}
 
 	/// Remove the registered error handler and return it. Do not refund its weight.
+	/// 删除已注册的错误处理程序并将其返回。不要退还其重量。
 	fn take_error_handler(&mut self) -> Xcm<Config::Call> {
 		let mut r = Xcm::<Config::Call>(vec![]);
 		sp_std::mem::swap(&mut self.error_handler, &mut r);
@@ -243,6 +249,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 	}
 
 	/// Drop the registered error handler and refund its weight.
+	/// 删除已注册的错误处理程序并退还其权重。
 	fn drop_error_handler(&mut self) {
 		self.error_handler = Xcm::<Config::Call>(vec![]);
 		self.total_surplus.saturating_accrue(self.error_handler_weight);
@@ -250,6 +257,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 	}
 
 	/// Remove the registered appendix and return it.
+	/// 删除已注册的附件并将其退回。
 	fn take_appendix(&mut self) -> Xcm<Config::Call> {
 		let mut r = Xcm::<Config::Call>(vec![]);
 		sp_std::mem::swap(&mut self.appendix, &mut r);
@@ -258,6 +266,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 	}
 
 	/// Refund any unused weight.
+	/// 退还任何未使用的重量
 	fn refund_surplus(&mut self) {
 		let current_surplus = self.total_surplus.saturating_sub(self.total_refunded);
 		if current_surplus > 0 {
@@ -269,6 +278,7 @@ impl<Config: config::Config> XcmExecutor<Config> {
 	}
 
 	/// Process a single XCM instruction, mutating the state of the XCM virtual machine.
+	/// 处理单个 XCM 指令，改变 XCM 虚拟机的状态。
 	fn process_instruction(&mut self, instr: Instruction<Config::Call>) -> Result<(), XcmError> {
 		match instr {
 			WithdrawAsset(assets) => {

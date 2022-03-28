@@ -19,10 +19,10 @@ use sp_std::result::Result;
 use xcm::latest::{Error as XcmError, MultiAsset, MultiLocation, Result as XcmResult};
 
 /// Facility for asset transacting.
-///
+/// 资产交易设施。
 /// This should work with as many asset/location combinations as possible. Locations to support may include non-account
 /// locations such as a `MultiLocation::X1(Junction::Parachain)`. Different chains may handle them in different ways.
-///
+/// 这应该适用于尽可能多的资产配置组合。要支持的位置可能包括非帐户位置，例如“MultiLocation::X1(Junction::Parachain)”。不同的链可能以不同的方式处理它们
 /// Can be amalgamated as a tuple of items that implement this trait. In such executions, if any of the transactors
 /// returns `Ok(())`, then it will short circuit. Else, execution is passed to the next transactor.
 pub trait TransactAsset {

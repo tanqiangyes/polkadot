@@ -25,8 +25,10 @@ use super::{MultiLocation, Xcm};
 pub enum Error {
 	Undefined,
 	/// An arithmetic overflow happened.
+	/// 算术溢出
 	Overflow,
 	/// The operation is intentionally unsupported.
+	/// 不支持
 	Unimplemented,
 	UnhandledXcmVersion,
 	/// The implementation does not handle a given XCM.
@@ -100,16 +102,21 @@ impl From<()> for Error {
 pub type Result = result::Result<(), Error>;
 
 /// Local weight type; execution time in picoseconds.
+/// 局部权重类型；执行时间以皮秒为单位。
 pub type Weight = u64;
 
 /// Outcome of an XCM execution.
+/// XCM 执行的结果。
 #[derive(Clone, Encode, Decode, Eq, PartialEq, Debug, scale_info::TypeInfo)]
 pub enum Outcome {
 	/// Execution completed successfully; given weight was used.
+	/// 执行成功，给定的weight已被使用。
 	Complete(Weight),
 	/// Execution started, but did not complete successfully due to the given error; given weight was used.
+	/// 执行已开始，但由于给定错误未成功完成；使用给定的重量。
 	Incomplete(Weight, Error),
 	/// Execution did not start due to the given error.
+	/// 由于给定的错误，执行没有开始。
 	Error(Error),
 }
 
@@ -139,10 +146,13 @@ impl Outcome {
 }
 
 /// Type of XCM message executor.
+/// XCM 消息执行器的类型。
 pub trait ExecuteXcm<Call> {
 	/// Execute some XCM `message` from `origin` using no more than `weight_limit` weight. The weight limit is
 	/// a basic hard-limit and the implementation may place further restrictions or requirements on weight and
 	/// other aspects.
+	/// 使用不超过 `weight_limit` 的权重从 `origin` 执行一些 XCM `message`。
+	/// 重量限制是一个基本的硬限制，实施时可能会对重量和其他方面提出进一步的限制或要求。
 	fn execute_xcm(origin: MultiLocation, message: Xcm<Call>, weight_limit: Weight) -> Outcome {
 		log::debug!(
 			target: "xcm::execute_xcm",
@@ -155,9 +165,10 @@ pub trait ExecuteXcm<Call> {
 	}
 
 	/// Execute some XCM `message` from `origin` using no more than `weight_limit` weight.
-	///
+	/// 使用不超过 `weight_limit` 的权重从 `origin` 执行一些 XCM `message`。
 	/// Some amount of `weight_credit` may be provided which, depending on the implementation, may allow
 	/// execution without associated payment.
+	/// 可能会提供一定数量的“weight_credit”，这取决于实施，可能允许在没有相关付款的情况下执行。
 	fn execute_xcm_in_credit(
 		origin: MultiLocation,
 		message: Xcm<Call>,
@@ -178,11 +189,12 @@ impl<C> ExecuteXcm<C> for () {
 }
 
 /// Utility for sending an XCM message.
-///
+/// 用于发送 XCM 消息的实用程序。
 /// These can be amalgamated in tuples to form sophisticated routing systems. In tuple format, each router might return
 /// `CannotReachDestination` to pass the execution to the next sender item. Note that each `CannotReachDestination`
 /// might alter the destination and the XCM message for to the next router.
-///
+/// 这些可以合并成元组以形成复杂的路由系统。在元组格式中，每个路由器可能会返回 `CannotReachDestination` 以将执行传递给下一个发送者项。
+/// 请注意，每个“CannotReachDestination”可能会更改目的地和下一个路由器的 XCM 消息。
 ///
 /// # Example
 /// ```rust
@@ -241,10 +253,12 @@ impl<C> ExecuteXcm<C> for () {
 /// ```
 pub trait SendXcm {
 	/// Send an XCM `message` to a given `destination`.
-	///
+	/// 发送 XCM消息到给定的`destination`
 	/// If it is not a destination which can be reached with this type but possibly could by others, then it *MUST*
 	/// return `CannotReachDestination`. Any other error will cause the tuple implementation to exit early without
 	/// trying other type fields.
+	/// 如果它不是可以通过此类型到达但其他人可以到达的目的地，则它必须返回“CannotReachDestination”。
+	/// 任何其他错误都会导致元组实现提前退出而不尝试其他类型字段。
 	fn send_xcm(destination: MultiLocation, message: Xcm<()>) -> Result;
 }
 

@@ -50,8 +50,10 @@ use scale_info::TypeInfo;
 #[derive(Clone, Decode, Encode, Eq, PartialEq, Ord, PartialOrd, Debug, TypeInfo)]
 pub struct MultiLocation {
 	/// The number of parent junctions at the beginning of this `MultiLocation`.
+	/// 此“MultiLocation”开头的父联结点的数量。
 	pub parents: u8,
 	/// The interior (i.e. non-parent) junctions that this `MultiLocation` contains.
+	/// 此“MultiLocation”包含的内部（即非父级）连接点。
 	pub interior: Junctions,
 }
 
@@ -62,7 +64,7 @@ impl Default for MultiLocation {
 }
 
 /// A relative location which is constrained to be an interior location of the context.
-///
+/// 一个相对位置，它被限制为上下文的内部位置。
 /// See also `MultiLocation`.
 pub type InteriorMultiLocation = Junctions;
 
@@ -380,6 +382,7 @@ impl MultiLocation {
 }
 
 /// A unit struct which can be converted into a `MultiLocation` of `parents` value 1.
+/// 一个单元结构，可以转换为 `parents` 值为 1 的 `MultiLocation`。
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Parent;
 impl From<Parent> for MultiLocation {

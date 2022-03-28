@@ -20,6 +20,7 @@ use parity_scale_codec::{Decode, DecodeLimit, Encode};
 
 /// Wrapper around the encoded and decoded versions of a value.
 /// Caches the decoded value once computed.
+/// 包装一个值的编码和解码版本。缓存计算后的解码值。
 #[derive(Encode, Decode, scale_info::TypeInfo)]
 #[codec(encode_bound())]
 #[codec(decode_bound())]

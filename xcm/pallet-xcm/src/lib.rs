@@ -15,6 +15,7 @@
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Pallet to handle XCM messages.
+//! 处理xcm消息的模块
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -44,7 +45,7 @@ use xcm_executor::traits::ConvertOrigin;
 use frame_support::PalletId;
 pub use pallet::*;
 
-#[frame_support::pallet]
+#[frame_support::pallet]//依赖引入
 pub mod pallet {
 	use super::*;
 	use frame_support::{
@@ -67,53 +68,68 @@ pub mod pallet {
 		/// An implementation of `Get<u32>` which just returns the latest XCM version which we can
 		/// support.
 		pub const CurrentXcmVersion: u32 = XCM_VERSION;
-	}
+	}//关于版本的定义
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
-	pub struct Pallet<T>(_);
+	pub struct Pallet<T>(_);//占位符，用来实现trait和方法
 
 	#[pallet::config]
 	/// The module configuration trait.
+	/// 运行时配置traits
+	/// 所有类型和常量都放在这里。
+	/// 使用 #[pallet::constant] 和 #[pallet::extra_constants]将值传递给元数据
 	pub trait Config: frame_system::Config {
 		/// The overarching event type.
+		/// 事件类型
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		/// Required origin for sending XCM messages. If successful, it resolves to `MultiLocation`
 		/// which exists as an interior location within this chain's XCM context.
+		/// 发送 XCM 消息所需的来源。如果成功，它将解析为作为该链 XCM 上下文中的内部位置存在的“MultiLocation”。
 		type SendXcmOrigin: EnsureOrigin<<Self as SysConfig>::Origin, Success = MultiLocation>;
 
 		/// The type used to actually dispatch an XCM to its destination.
+		/// 用于实际将 XCM 分派到其目的地的类型。
 		type XcmRouter: SendXcm;
 
 		/// Required origin for executing XCM messages, including the teleport functionality. If successful,
 		/// then it resolves to `MultiLocation` which exists as an interior location within this chain's XCM
 		/// context.
+		/// 执行XCM信息所需的原点，包括远程传输功能。如果成功，则解析为`MultiLocation`，它作为内部位置存在于此链的XCM上下文中。
 		type ExecuteXcmOrigin: EnsureOrigin<<Self as SysConfig>::Origin, Success = MultiLocation>;
 
 		/// Our XCM filter which messages to be executed using `XcmExecutor` must pass.
+		/// 我们的XCM过滤器，使用`XcmExecutor`执行的消息必须通过。
 		type XcmExecuteFilter: Contains<(MultiLocation, Xcm<<Self as SysConfig>::Call>)>;
 
 		/// Something to execute an XCM message.
+		/// 执行Xcm消息
 		type XcmExecutor: ExecuteXcm<<Self as SysConfig>::Call>;
 
 		/// Our XCM filter which messages to be teleported using the dedicated extrinsic must pass.
+		/// 我们的XCM过滤器，使用专用的外在条件传送的信息必须通过。
 		type XcmTeleportFilter: Contains<(MultiLocation, Vec<MultiAsset>)>;
 
 		/// Our XCM filter which messages to be reserve-transferred using the dedicated extrinsic must pass.
+		/// 我们的XCM过滤器，使用专用的外在条件，哪些消息必须通过储备传输。
 		type XcmReserveTransferFilter: Contains<(MultiLocation, Vec<MultiAsset>)>;
 
 		/// Means of measuring the weight consumed by an XCM message locally.
+		/// 测量XCM消息在本地所消耗的重量的手段。
 		type Weigher: WeightBounds<<Self as SysConfig>::Call>;
 
 		/// Means of inverting a location.
+		/// 倒置一个位置的手段。
 		type LocationInverter: InvertLocation;
 
 		/// The outer `Origin` type.
+		/// `Origin`类型
 		type Origin: From<Origin> + From<<Self as SysConfig>::Origin>;
 
 		/// The outer `Call` type.
+		///  `Call` 类型
 		type Call: Parameter
 			+ GetDispatchInfo
 			+ IsType<<Self as frame_system::Config>::Call>
@@ -123,97 +139,101 @@ pub mod pallet {
 
 		/// The latest supported version that we advertise. Generally just set it to
 		/// `pallet_xcm::CurrentXcmVersion`.
+		/// 我们所宣传的最新支持的版本。一般来说，只要把它设置为`pallet_xcm::CurrentXcmVersion`。
 		type AdvertisedXcmVersion: Get<XcmVersion>;
 	}
 
 	/// The maximum number of distinct assets allowed to be transferred in a single helper extrinsic.
+	/// 允许在一个辅助外在因素中转移的最大数量的不同资产。
 	const MAX_ASSETS_FOR_TRANSFER: usize = 2;
 
+	/// 运行时事件。可以将事件类型字符串化为元数据。
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Execution of an XCM message was attempted.
-		///
+		/// 已尝试执行 XCM 消息。
 		/// \[ outcome \]
 		Attempted(xcm::latest::Outcome),
 		/// A XCM message was sent.
-		///
+		/// 发送的XCM消息
 		/// \[ origin, destination, message \]
 		Sent(MultiLocation, MultiLocation, Xcm<()>),
 		/// Query response received which does not match a registered query. This may be because a
 		/// matching query was never registered, it may be because it is a duplicate response, or
 		/// because the query timed out.
-		///
+		/// 收到的查询响应与注册的查询不匹配。这可能是因为从来没有注册过一个匹配的查询，可能是因为它是一个重复的响应，或者是因为查询超时。
 		/// \[ origin location, id \]
 		UnexpectedResponse(MultiLocation, QueryId),
 		/// Query response has been received and is ready for taking with `take_response`. There is
 		/// no registered notification call.
-		///
+		/// 已收到查询响应，并准备用`take_response'取走。没有注册的通知调用。
 		/// \[ id, response \]
 		ResponseReady(QueryId, Response),
 		/// Query response has been received and query is removed. The registered notification has
 		/// been dispatched and executed successfully.
-		///
+		/// 已收到查询响应，查询已被删除。已注册的通知已被派发并成功执行。
 		/// \[ id, pallet index, call index \]
 		Notified(QueryId, u8, u8),
 		/// Query response has been received and query is removed. The registered notification could
 		/// not be dispatched because the dispatch weight is greater than the maximum weight
 		/// originally budgeted by this runtime for the query result.
-		///
+		/// 已收到查询响应，查询已被删除。注册的通知无法被派发，因为派发的权重大于该运行时最初为查询结果预算的最大权重。
 		/// \[ id, pallet index, call index, actual weight, max budgeted weight \]
 		NotifyOverweight(QueryId, u8, u8, Weight, Weight),
 		/// Query response has been received and query is removed. There was a general error with
 		/// dispatching the notification call.
-		///
+		/// 已收到查询响应，查询已被删除。派遣通知调用时出现了一般性错误。
 		/// \[ id, pallet index, call index \]
 		NotifyDispatchError(QueryId, u8, u8),
 		/// Query response has been received and query is removed. The dispatch was unable to be
 		/// decoded into a `Call`; this might be due to dispatch function having a signature which
 		/// is not `(origin, QueryId, Response)`.
-		///
+		/// 已收到查询响应，查询已被删除。调度无法被解码为 "Call"；这可能是由于调度函数的签名不是"(origin, QueryId, Response)"。
 		/// \[ id, pallet index, call index \]
 		NotifyDecodeFailed(QueryId, u8, u8),
 		/// Expected query response has been received but the origin location of the response does
 		/// not match that expected. The query remains registered for a later, valid, response to
 		/// be received and acted upon.
-		///
+		/// 已收到预期的查询响应，但响应的来源地与预期的不一致。该查询保持注册状态，以便以后收到有效的响应并对其采取行动。
 		/// \[ origin location, id, expected location \]
 		InvalidResponder(MultiLocation, QueryId, Option<MultiLocation>),
 		/// Expected query response has been received but the expected origin location placed in
 		/// storage by this runtime previously cannot be decoded. The query remains registered.
-		///
+		/// 已收到预期的查询响应，但之前由该运行时放置在存储中的预期原点位置无法解码。该查询仍然被注册。
 		/// This is unexpected (since a location placed in storage in a previously executing
 		/// runtime should be readable prior to query timeout) and dangerous since the possibly
 		/// valid response will be dropped. Manual governance intervention is probably going to be
 		/// needed.
-		///
+		/// 这是出乎意料的（因为在之前执行的运行时中放置在存储中的位置在查询超时之前应该是可读的），
+		/// 而且很危险，因为可能有效的响应会被放弃。可能需要人工治理干预。
 		/// \[ origin location, id \]
 		InvalidResponderVersion(MultiLocation, QueryId),
 		/// Received query response has been read and removed.
-		///
+		/// 收到的请求回复已经被读取和移除
 		/// \[ id \]
 		ResponseTaken(QueryId),
 		/// Some assets have been placed in an asset trap.
-		///
+		/// 有些资产被放置在资产陷阱中。
 		/// \[ hash, origin, assets \]
 		AssetsTrapped(H256, MultiLocation, VersionedMultiAssets),
 		/// An XCM version change notification message has been attempted to be sent.
-		///
+		/// 已尝试发送XCM版本变更通知消息。
 		/// \[ destination, result \]
 		VersionChangeNotified(MultiLocation, XcmVersion),
 		/// The supported version of a location has been changed. This might be through an
 		/// automatic notification or a manual intervention.
-		///
+		/// 支持版本已被改变。这可能是通过一个自动通知或手动干预。
 		/// \[ location, XCM version \]
 		SupportedVersionChanged(MultiLocation, XcmVersion),
 		/// A given location which had a version change subscription was dropped owing to an error
 		/// sending the notification to it.
-		///
+		/// 由于向一个特定的位置发送通知的错误，该位置的版本变更订阅被放弃。
 		/// \[ location, query ID, error \]
 		NotifyTargetSendFail(MultiLocation, QueryId, XcmError),
 		/// A given location which had a version change subscription was dropped owing to an error
 		/// migrating the location to our new XCM format.
-		///
+		/// 由于在将位置迁移到我们新的XCM格式时出现了错误，一个有版本变更订阅的特定位置被放弃了。
 		/// \[ location, query ID \]
 		NotifyTargetMigrationFail(VersionedMultiLocation, QueryId),
 	}
@@ -222,8 +242,10 @@ pub mod pallet {
 	#[derive(PartialEq, Eq, Clone, Encode, Decode, RuntimeDebug, TypeInfo)]
 	pub enum Origin {
 		/// It comes from somewhere in the XCM space wanting to transact.
+		/// 它来自 XCM 空间中想要进行交易的某个地方。
 		Xcm(MultiLocation),
 		/// It comes as an expected response from an XCM location.
+		/// 这是来自 XCM 位置的预期响应。
 		Response(MultiLocation),
 	}
 	impl From<MultiLocation> for Origin {
@@ -408,6 +430,8 @@ pub mod pallet {
 		}
 	}
 
+	/// 定义一些应该被执行的逻辑
+	/// 在某些情况下定期执行，例如on_initialize。
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
@@ -449,7 +473,7 @@ pub mod pallet {
 			T::DbWeight::get().write
 		}
 	}
-
+	/// 可从运行时以外的地方调用的函数
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(100_000_000)]

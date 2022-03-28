@@ -22,6 +22,11 @@
 //! - `Wild`: A single asset wildcard, this can either be "all" assets, or all assets of a specific kind.
 //! - `MultiAssetFilter`: A combination of `Wild` and `MultiAssets` designed for efficiently filtering an XCM holding
 //!   account.
+//! 这包括了四种代表资产的类型。
+//！ - `MultiAsset：一个单一资产的描述，可以是一个非可替换资产的实例，也可以是一些可替换资产的数量。
+//！ - `MultiAssets`：一个`MultiAsset'的集合。这些资产被存储在一个`Vec'中，并以可替换资产为先进行排序。
+//！ - `Wild`: 一个单一的资产通配符，它可以是 "all "资产，也可以是某一特定种类的所有资产。
+//！ - `MultiAssetFilter`: Wild "和 "MultiAssets "的组合，用于有效过滤XCM持有账户。
 
 use super::MultiLocation;
 use alloc::{vec, vec::Vec};
@@ -34,6 +39,7 @@ use parity_scale_codec::{self as codec, Decode, Encode};
 use scale_info::TypeInfo;
 
 /// A general identifier for an instance of a non-fungible asset class.
+/// 不可替代资产类别实例的通用标识符。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug, TypeInfo)]
 pub enum AssetInstance {
 	/// Undefined - used if the non-fungible asset class has only one instance.
@@ -41,6 +47,7 @@ pub enum AssetInstance {
 
 	/// A compact index. Technically this could be greater than `u128`, but this implementation supports only
 	/// values up to `2**128 - 1`.
+	/// 一个紧凑的索引。从技术上讲，这可能大于 `u128`，但此实现仅支持高达 `2128 - 1` 的值。
 	Index(#[codec(compact)] u128),
 
 	/// A 4-byte fixed-length datum.
@@ -96,6 +103,7 @@ impl From<Vec<u8>> for AssetInstance {
 }
 
 /// Classification of an asset being concrete or abstract.
+/// 资产的分类是具体的还是抽象的。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Encode, Decode, TypeInfo)]
 pub enum AssetId {
 	Concrete(MultiLocation),
@@ -116,6 +124,7 @@ impl From<Vec<u8>> for AssetId {
 
 impl AssetId {
 	/// Prepend a `MultiLocation` to a concrete asset, giving it a new root location.
+	/// 将“MultiLocation”添加到具体资产，为其提供新的根位置。
 	pub fn prepend_with(&mut self, prepend: &MultiLocation) -> Result<(), ()> {
 		if let AssetId::Concrete(ref mut l) = self {
 			l.prepend_with(prepend.clone()).map_err(|_| ())?;
@@ -125,6 +134,7 @@ impl AssetId {
 
 	/// Mutate the asset to represent the same value from the perspective of a new `target`
 	/// location. The local chain's location is provided in `ancestry`.
+	/// 从新的“目标”位置的角度改变资产以表示相同的值。本地链的位置在“祖先”中提供。
 	pub fn reanchor(&mut self, target: &MultiLocation, ancestry: &MultiLocation) -> Result<(), ()> {
 		if let AssetId::Concrete(ref mut l) = self {
 			l.reanchor(target, ancestry)?;
@@ -133,18 +143,21 @@ impl AssetId {
 	}
 
 	/// Use the value of `self` along with a `fun` fungibility specifier to create the corresponding `MultiAsset` value.
+	/// 使用 `self` 的值和 `fun` 可替换性说明符来创建相应的 `MultiAsset` 值。
 	pub fn into_multiasset(self, fun: Fungibility) -> MultiAsset {
 		MultiAsset { fun, id: self }
 	}
 
 	/// Use the value of `self` along with a `fun` fungibility specifier to create the corresponding `WildMultiAsset`
 	/// wildcard (`AllOf`) value.
+	/// 使用 `self` 的值和 `fun` 可替代性说明符来创建相应的 `WildMultiAsset` 通配符 (`AllOf`) 值。
 	pub fn into_wild(self, fun: WildFungibility) -> WildMultiAsset {
 		WildMultiAsset::AllOf { fun, id: self }
 	}
 }
 
 /// Classification of whether an asset is fungible or not, along with a mandatory amount or instance.
+/// 资产是否可替代的分类，以及强制金额或实例。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Encode, Decode, TypeInfo)]
 pub enum Fungibility {
 	Fungible(#[codec(compact)] u128),
@@ -287,6 +300,7 @@ impl TryFrom<Vec<super::super::v0::MultiAsset>> for MultiAsset {
 }
 
 /// A `Vec` of `MultiAsset`s. There may be no duplicate fungible items in here and when decoding, they must be sorted.
+/// `MultiAsset`s 的`Vec`。这里可能没有重复的可替代项目，解码时必须对其进行排序。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Encode, TypeInfo)]
 pub struct MultiAssets(Vec<MultiAsset>);
 
@@ -357,9 +371,11 @@ impl MultiAssets {
 
 	/// Create a new instance of `MultiAssets` from a `Vec<MultiAsset>` whose contents are sorted and
 	/// which contain no duplicates.
-	///
+	/// `MultiAsset`s 的`Vec`。这里可能没有重复的可替代项目，解码时必须对其进行排序。
 	/// Returns `Ok` if the operation succeeds and `Err` if `r` is out of order or had duplicates. If you can't
 	/// guarantee that `r` is sorted and deduplicated, then use `From::<Vec<MultiAsset>>::from` which is infallible.
+	/// 如果操作成功，则返回 `Ok`，如果 `r` 无序或有重复，则返回 `Err`。如果您不能保证 `r` 已排序和去重，
+	/// 则使用绝对可靠的 `From::<Vec<MultiAsset>>::from`。
 	pub fn from_sorted_and_deduplicated(r: Vec<MultiAsset>) -> Result<Self, ()> {
 		if r.is_empty() {
 			return Ok(Self(Vec::new()))
@@ -450,6 +466,7 @@ impl MultiAssets {
 	}
 }
 /// Classification of whether an asset is fungible or not.
+/// 资产是否可替代的分类。
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Encode, Decode, TypeInfo)]
 pub enum WildFungibility {
 	Fungible,
@@ -457,13 +474,16 @@ pub enum WildFungibility {
 }
 
 /// A wildcard representing a set of assets.
+/// 表示一组资产的通配符。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Encode, Decode, TypeInfo)]
 pub enum WildMultiAsset {
 	/// All assets in the holding register, up to `usize` individual assets (different instances of non-fungibles could
 	/// be separate assets).
+	/// 持有登记册中的所有资产，最多“使用”单个资产（不可替代的不同实例可以是单独的资产）。
 	All,
 	/// All assets in the holding register of a given fungibility and ID. If operating on non-fungibles, then a limit
 	/// is provided for the maximum amount of matching instances.
+	/// 给定可替代性和 ID 的持有登记册中的所有资产。如果在不可替代的设备上运行，则为匹配实例的最大数量提供限制。
 	AllOf { id: AssetId, fun: WildFungibility },
 }
 
@@ -526,9 +546,10 @@ impl<A: Into<AssetId>, B: Into<WildFungibility>> From<(A, B)> for WildMultiAsset
 }
 
 /// `MultiAsset` collection, either `MultiAssets` or a single wildcard.
-///
+/// `MultiAsset` 集合，`MultiAssets` 或单个通配符。
 /// Note: Vectors of wildcards whose encoding is supported in XCM v0 are unsupported
 /// in this implementation and will result in a decode error.
+/// 注意：XCM v0 中支持编码的通配符向量在此实现中不受支持，将导致解码错误。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Debug, Encode, Decode, TypeInfo)]
 pub enum MultiAssetFilter {
 	Definite(MultiAssets),

@@ -184,6 +184,7 @@ pub enum Response {
 	/// Some assets.
 	Assets(MultiAssets),
 	/// The outcome of an XCM instruction.
+	/// XCM 指令的结果。
 	ExecutionResult(Option<(u32, Error)>),
 	/// An XCM version.
 	Version(super::Version),
@@ -226,13 +227,14 @@ impl From<WeightLimit> for Option<u64> {
 pub type Weight = u64;
 
 /// Cross-Consensus Message: A message from one consensus system to another.
-///
+/// 交叉共识消息：从一个共识系统到另一个共识系统的消息。
 /// Consensus systems that may send and receive messages include blockchains and smart contracts.
-///
+/// 可以发送和接收消息的共识系统包括区块链和智能合约。
 /// All messages are delivered from a known *origin*, expressed as a `MultiLocation`.
-///
+/// 所有消息都从已知来源传递，表示为“MultiLocation”。
 /// This is the inner XCM format and is version-sensitive. Messages are typically passed using the outer
 /// XCM format, known as `VersionedXcm`.
+/// 这是内部 XCM 格式并且是版本敏感的。消息通常使用外部 XCM 格式传递，称为 `VersionedXcm`。
 #[derive(Derivative, Encode, Decode, TypeInfo, xcm_procedural::XcmWeightInfoTrait)]
 #[derivative(Clone(bound = ""), Eq(bound = ""), PartialEq(bound = ""), Debug(bound = ""))]
 #[codec(encode_bound())]
@@ -251,7 +253,7 @@ pub enum Instruction<Call> {
 
 	/// Asset(s) (`assets`) have been received into the ownership of this system on the `origin`
 	/// system and equivalent derivatives should be placed into the Holding Register.
-	///
+	/// 资产（“资产”）已在“来源”系统上归入该系统的所有权，等效衍生产品应放入持有登记册。
 	/// - `assets`: The asset(s) that are minted into holding.
 	///
 	/// Safety: `origin` must be trusted to have received and be storing `assets` such that they
@@ -264,7 +266,7 @@ pub enum Instruction<Call> {
 
 	/// Asset(s) (`assets`) have been destroyed on the `origin` system and equivalent assets should
 	/// be created and placed into the Holding Register.
-	///
+	/// 资产（“资产”）已在“来源”系统中销毁，应创建等效资产并将其放入持有登记册。
 	/// - `assets`: The asset(s) that are minted into the Holding Register.
 	///
 	/// Safety: `origin` must be trusted to have irrevocably destroyed the corresponding `assets`
@@ -406,7 +408,7 @@ pub enum Instruction<Call> {
 	/// This may be used by the XCM author to ensure that later instructions cannot command the
 	/// authority of the origin (e.g. if they are being relayed from an untrusted source, as often
 	/// the case with `ReserveAssetDeposited`).
-	///
+	/// XCM 作者可以使用它来确保以后的指令不能命令源的权限（例如，如果它们是从不受信任的来源中继的，就像`ReserveAssetDeposited`经常发生的情况）。
 	/// Safety: No concerns.
 	///
 	/// Kind: *Instruction*.
@@ -415,17 +417,17 @@ pub enum Instruction<Call> {
 	ClearOrigin,
 
 	/// Mutate the origin to some interior location.
-	///
+	/// 将原点变异到某个内部位置。
 	/// Kind: *Instruction*
 	///
 	/// Errors:
 	DescendOrigin(InteriorMultiLocation),
 
 	/// Immediately report the contents of the Error Register to the given destination via XCM.
-	///
+	/// 立即通过 XCM 将错误寄存器的内容报告给给定的目的地。
 	/// A `QueryResponse` message of type `ExecutionOutcome` is sent to `dest` with the given
 	/// `query_id` and the outcome of the XCM.
-	///
+	/// 一条 `ExecutionOutcome` 类型的 `QueryResponse` 消息被发送到 `dest` 并带有给定的 `query_id` 和 XCM 的结果。
 	/// Kind: *Instruction*
 	///
 	/// Errors:
@@ -439,7 +441,7 @@ pub enum Instruction<Call> {
 
 	/// Remove the asset(s) (`assets`) from the Holding Register and place equivalent assets under
 	/// the ownership of `beneficiary` within this consensus system.
-	///
+	/// 从持有登记册中删除资产（“资产”），并将等价资产置于该共识系统内的“受益人”的所有权之下。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `max_assets`: The maximum number of unique assets/asset instances to remove from holding.
 	///   Only the first `max_assets` assets/instances of those matched by `assets` will be removed,
@@ -499,7 +501,7 @@ pub enum Instruction<Call> {
 
 	/// Remove the asset(s) (`assets`) from holding and send a `WithdrawAsset` XCM message to a
 	/// reserve location.
-	///
+	/// 从持有中移除资产（`assets`）并向保留位置发送`WithdrawAsset` XCM 消息。
 	/// - `assets`: The asset(s) to remove from holding.
 	/// - `reserve`: A valid location that acts as a reserve for all asset(s) in `assets`. The
 	///   sovereign account of this consensus system *on the reserve location* will have appropriate
@@ -568,7 +570,7 @@ pub enum Instruction<Call> {
 	BuyExecution { fees: MultiAsset, weight_limit: WeightLimit },
 
 	/// Refund any surplus weight previously bought with `BuyExecution`.
-	///
+	/// 退还之前使用“BuyExecution”购买的任何剩余重量。
 	/// Kind: *Instruction*
 	///
 	/// Errors: None.
@@ -576,7 +578,7 @@ pub enum Instruction<Call> {
 
 	/// Set the Error Handler Register. This is code that should be called in the case of an error
 	/// happening.
-	///
+	/// 设置错误处理寄存器。这是发生错误时应该调用的代码。
 	/// An error occurring within execution of this code will _NOT_ result in the error register
 	/// being set, nor will an error handler be called due to it. The error handler and appendix
 	/// may each still be set.
@@ -593,7 +595,7 @@ pub enum Instruction<Call> {
 	/// Set the Appendix Register. This is code that should be called after code execution
 	/// (including the error handler if any) is finished. This will be called regardless of whether
 	/// an error occurred.
-	///
+	/// 设置附录寄存器。这是应该在代码执行（包括错误处理程序，如果有）完成后调用的代码。无论是否发生错误，都会调用它。
 	/// Any error occurring due to execution of this code will result in the error register being
 	/// set, and the error handler (if set) firing.
 	///
@@ -614,7 +616,7 @@ pub enum Instruction<Call> {
 	ClearError,
 
 	/// Create some assets which are being held on behalf of the origin.
-	///
+	/// 创建一些代表来源持有的资产。
 	/// - `assets`: The assets which are to be claimed. This must match exactly with the assets
 	///   claimable by the origin of the ticket.
 	/// - `ticket`: The ticket of the asset; this is an abstract identifier to help locate the
@@ -626,7 +628,7 @@ pub enum Instruction<Call> {
 	ClaimAsset { assets: MultiAssets, ticket: MultiLocation },
 
 	/// Always throws an error of type `Trap`.
-	///
+	/// 总是抛出类型为“Trap”的错误。
 	/// Kind: *Instruction*
 	///
 	/// Errors:

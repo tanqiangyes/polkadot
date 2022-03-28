@@ -29,9 +29,11 @@ use xcm::latest::{
 };
 
 /// List of non-wildcard fungible and non-fungible assets.
+/// 非通配符可替代和不可替代资产列表。
 #[derive(Default, Clone, RuntimeDebug, Eq, PartialEq)]
 pub struct Assets {
 	/// The fungible assets.
+	/// 可替代资产。
 	pub fungible: BTreeMap<AssetId, u128>,
 
 	/// The non-fungible assets.
@@ -77,6 +79,7 @@ impl From<Assets> for MultiAssets {
 }
 
 /// An error emitted by `take` operations.
+/// `take` 操作发出的错误。
 #[derive(Debug)]
 pub enum TakeError {
 	/// There was an attempt to take an asset without saturating (enough of) which did not exist.
@@ -131,7 +134,7 @@ impl Assets {
 	}
 
 	/// Mutate `self` to contain all given `assets`, saturating if necessary.
-	///
+	/// 变异 `self` 以包含所有给定的 `assets`，必要时饱和。
 	/// NOTE: [`Assets`] are always sorted, allowing us to optimize this function from `O(n^2)` to `O(n)`.
 	pub fn subsume_assets(&mut self, mut assets: Assets) {
 		let mut f_iter = assets.fungible.iter_mut();
@@ -414,7 +417,7 @@ impl Assets {
 	}
 
 	/// Return the assets in `self`, but (asset-wise) of no greater value than `mask`.
-	///
+	/// 返回 `self` 中的资产，但（资产方面）价值不大于 `mask`。
 	/// Result is undefined if `mask` includes elements which match to the same asset more than once.
 	///
 	/// Example:

@@ -19,7 +19,7 @@ use sp_std::result::Result;
 use xcm::latest::{MultiLocation, Xcm};
 
 /// Trait to determine whether the execution engine should actually execute a given XCM.
-///
+/// 确定执行引擎是否应该实际执行给定 XCM 的特征。
 /// Can be amalgamated into a tuple to have multiple trials. If any of the tuple elements returns `Ok()`, the
 /// execution stops. Else, `Err(_)` is returned if all elements reject the message.
 pub trait ShouldExecute {

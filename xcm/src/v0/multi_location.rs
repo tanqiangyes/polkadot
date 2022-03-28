@@ -15,36 +15,46 @@
 // along with Polkadot.  If not, see <http://www.gnu.org/licenses/>.
 
 //! Cross-Consensus Message format data structures.
+//! 交叉共识消息格式数据结构。
 
 use super::Junction;
 use core::{mem, result};
 use parity_scale_codec::{self, Decode, Encode};
 
 /// A relative path between state-bearing consensus systems.
-///
+/// 状态承载共识系统之间的相对路径。
 /// A location in a consensus system is defined as an *isolatable state machine* held within global consensus. The
 /// location in question need not have a sophisticated consensus algorithm of its own; a single account within
 /// Ethereum, for example, could be considered a location.
-///
+/// 共识系统中的位置被定义为保持在全局共识中的可隔离状态机。有问题的位置不需要自己有复杂的共识算法；例如，以太坊内的单个帐户可以被视为一个位置。
 /// A very-much non-exhaustive list of types of location include:
 /// - A (normal, layer-1) block chain, e.g. the Bitcoin mainnet or a parachain.
 /// - A layer-0 super-chain, e.g. the Polkadot Relay chain.
 /// - A layer-2 smart contract, e.g. an ERC-20 on Ethereum.
 /// - A logical functional component of a chain, e.g. a single instance of a pallet on a Frame-based Substrate chain.
 /// - An account.
-///
+/// 一个非常不详尽的位置类型列表包括：
+/// - 一个（正常的，第 1 层）区块链，例如比特币主网或平行链。
+/// - 一个第 0 层超级链，例如Polkadot 中继链。
+/// - 第 2 层智能合约，例如以太坊上的 ERC-20。
+/// - 链的逻辑功能组件，例如基于框架的 Substrate 链上托盘的单个实例。
+/// - 一个帐户。
 /// A `MultiLocation` is a *relative identifier*, meaning that it can only be used to define the relative path
 /// between two locations, and cannot generally be used to refer to a location universally. It is comprised of a
 /// number of *junctions*, each morphing the previous location, either diving down into one of its internal locations,
 /// called a *sub-consensus*, or going up into its parent location. Correct `MultiLocation` values must have all
 /// `Parent` junctions as a prefix to all *sub-consensus* junctions.
-///
+/// `MultiLocation`是一个相对标识符，意味着它只能用来定义两个位置之间的相对路径，一般不能用来泛指一个位置。
+/// 它由许多连接点组成，每个连接点都变形了前一个位置，要么向下潜入其内部位置之一，称为子共识，要么向上进入其父位置。
+/// 正确的 `MultiLocation` 值必须将所有 `Parent` 联结作为所有子共识联结的前缀。
 /// This specific `MultiLocation` implementation uses a Rust `enum` in order to make pattern matching easier.
-///
+/// 这个特定的 `MultiLocation` 实现使用 Rust `enum` 以使模式匹配更容易。
 /// The `MultiLocation` value of `Null` simply refers to the interpreting consensus system.
+/// `Null` 的`MultiLocation` 值仅指解释性共识系统。
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Encode, Decode, Debug, scale_info::TypeInfo)]
 pub enum MultiLocation {
 	/// The interpreting consensus system.
+	/// 解释共识系统。
 	Null,
 	/// A relative path comprising 1 junction.
 	X1(Junction),
@@ -65,6 +75,7 @@ pub enum MultiLocation {
 }
 
 /// Maximum number of junctions a `MultiLocation` can contain.
+/// `MultiLocation` 可以包含的最大连接数。
 pub const MAX_MULTILOCATION_LENGTH: usize = 8;
 
 xcm_procedural::impl_conversion_functions_for_multilocation_v0!();

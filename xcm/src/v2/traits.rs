@@ -204,16 +204,18 @@ impl<C> ExecuteXcm<C> for () {
 }
 
 /// Error result value when attempting to send an XCM message.
+/// 尝试发送 XCM 消息时的错误结果值。
 #[derive(Clone, Encode, Decode, Eq, PartialEq, Debug, scale_info::TypeInfo)]
 pub enum SendError {
 	/// The message and destination combination was not recognized as being reachable.
-	///
+	/// 消息和目标组合未被识别为可达。
 	/// This is not considered fatal: if there are alternative transport routes available, then
 	/// they may be attempted. For this reason, the destination and message are contained.
 	CannotReachDestination(MultiLocation, Xcm<()>),
 	/// Destination is routable, but there is some issue with the transport mechanism. This is
 	/// considered fatal.
 	/// A human-readable explanation of the specific issue is provided.
+	/// 目的地是可路由的，但传输机制存在一些问题。这被认为是致命的。提供了对特定问题的可读解释。
 	Transport(#[codec(skip)] &'static str),
 	/// Destination is known to be unroutable. This is considered fatal.
 	Unroutable,

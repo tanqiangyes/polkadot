@@ -100,7 +100,7 @@ impl TryFrom<Junction0> for Junction {
 
 impl Junction {
 	/// Convert `self` into a `MultiLocation` containing 0 parents.
-	///
+	/// 将 `self` 转换为包含 0 个父项的 `MultiLocation`。
 	/// Similar to `Into::into`, except that this method can be used in a const evaluation context.
 	pub const fn into(self) -> MultiLocation {
 		MultiLocation { parents: 0, interior: Junctions::X1(self) }
